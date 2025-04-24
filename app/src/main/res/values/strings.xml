@@ -1,0 +1,44 @@
+<resources>
+    <string name="app_name">Digital Shield</string>
+    <!-- Image descriptions -->
+    <string name="shield_image_description">Digital Shield Logo</string>
+    <string name="search_icon_description">Иконка поиска</string>
+
+    <!-- Login and register screens -->
+    <string name="digital_shield">Цифровой щит</string>
+    <string name="to_register">Зарегистрироваться</string>
+    <string name="phone_number">Номер телефона</string>
+    <string name="password">Пароль</string>
+    <string name="password_repeat">Повторите пароль</string>
+    <string name="to_login">Войти</string>
+    <string name="have_no_account">Нет аккаунта?</string>
+    <string name="have_account">Уже есть аккаунт?</string>
+
+    <!-- Home screen -->
+    <string name="safe">Безопасные</string>
+    <string name="suspicious">Подозрительные</string>
+    <string name="blocked">Заблокированные</string>
+    <string name="incoming_calls">Входящие вызовы</string>
+    <string name="enter_phone_number">Введите номер…</string>
+
+    <!--  CallsTable  -->
+    <string name="all">Все</string>
+    <!--  Call Details screen  -->
+    <string name="call_details">Подробности вызова</string>
+    <string name="number">Номер</string>
+    <string name="duration">Длительность</string>
+    <string name="call_date">Время звонка</string>
+    <string name="safe_call">Безопасный звонок</string>
+    <string name="blocked_call">Заблокированный звонок</string>
+    <string name="suspicious_call">Подозрительный звонок</string>
+    <string name="suspicious_phrases">Подозрительные фразы:</string>
+
+    <!--  Bottom navbar  -->
+    <string name="search">Поиск</string>
+    <string name="home">Главная</string>
+    <string name="stat">Статистика</string>
+
+    <!--  PieChartStat  -->
+    <string name="all_calls">Все звонки</string>
+
+</resources>
