@@ -7,7 +7,6 @@ import android.app.NotificationManager
 import android.app.Service
 import android.content.Context
 import android.content.Intent
-import android.os.Build
 import android.os.IBinder
 import android.telephony.PhoneStateListener
 import android.telephony.TelephonyManager
@@ -33,6 +32,7 @@ class BackgroundRecordingService : Service() {
     override fun onDestroy() {
         telephonyManager.listen(callStateListener, PhoneStateListener.LISTEN_NONE)
         super.onDestroy()
+        callStateListener.cleanup()
     }
 
     override fun onBind(intent: Intent?): IBinder? {

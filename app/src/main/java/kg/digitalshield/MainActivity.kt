@@ -1,7 +1,6 @@
 package kg.digitalshield
 
 import android.content.Intent
-import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -18,6 +17,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.chaquo.python.Python
+import com.chaquo.python.android.AndroidPlatform
 import kg.digitalshield.db.CallViewModel
 import kg.digitalshield.navigation.BottomNavBar
 import kg.digitalshield.navigation.Screen
@@ -28,13 +29,15 @@ import kg.digitalshield.ui.screen.RegisterScreen
 import kg.digitalshield.ui.screen.SearchScreen
 import kg.digitalshield.ui.screen.StatisticScreen
 import kg.digitalshield.ui.theme.AppTheme
-import org.vosk.Model
-import org.vosk.android.StorageService
-import java.io.IOException
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // "context" must be an Activity, Service or Application object from your app.
+        if (!Python.isStarted()) {
+            Python.start(AndroidPlatform(this));
+        }
 
         val callViewModel = ViewModelProvider(this)[CallViewModel::class.java]
 
