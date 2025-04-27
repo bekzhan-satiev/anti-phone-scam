@@ -12,13 +12,14 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.chaquo.python.Python
 import com.chaquo.python.android.AndroidPlatform
+import dagger.hilt.android.AndroidEntryPoint
 import kg.digitalshield.db.CallViewModel
 import kg.digitalshield.navigation.BottomNavBar
 import kg.digitalshield.navigation.Screen
@@ -30,6 +31,7 @@ import kg.digitalshield.ui.screen.SearchScreen
 import kg.digitalshield.ui.screen.StatisticScreen
 import kg.digitalshield.ui.theme.AppTheme
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -38,8 +40,6 @@ class MainActivity : ComponentActivity() {
         if (!Python.isStarted()) {
             Python.start(AndroidPlatform(this));
         }
-
-        val callViewModel = ViewModelProvider(this)[CallViewModel::class.java]
 
         val serviceIntent = Intent(this, BackgroundRecordingService::class.java)
         startForegroundService(serviceIntent)
@@ -54,6 +54,9 @@ class MainActivity : ComponentActivity() {
                     Screen.Register.route -> false
                     else -> true
                 }
+
+                // Use Hilt to inject CallViewModel
+                val callViewModel: CallViewModel = viewModel()
 
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),

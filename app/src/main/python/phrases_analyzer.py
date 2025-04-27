@@ -9,32 +9,26 @@ class StringAnalyzer:
 
     def analyze(self, input_string: str):
         with self.lock:
+            # Increment the counter and add the input string to the list
             self.counter += 1
             self.strings_list.append(input_string)
             time.sleep(1)  # Simulate processing delay
 
             # Return different values based on call count
             if self.counter == 1:
-                return 0.5
+                return []  # Return an empty list for the first call
             elif self.counter == 2:
-                return 0.55
-            elif self.counter == 3:
-                return 0.8
+                # For the second call, return the list of phrases and reset state
+                result = self.strings_list.copy()
+                self.strings_list.clear()  # Clear the list
+                self.counter = 0  # Reset the counter
+                return result
             else:
-                return None  # or some default value
-
-    def phrases(self):
-        with self.lock:
-            result = self.strings_list.copy()
-            self.strings_list.clear()
-            return result
+                return []  # Return an empty list for any other case
 
 # Create an instance of StringAnalyzer for use in Kotlin
 analyzer_instance = StringAnalyzer()
 
-# Wrapper functions to interact with the analyzer_instance
+# Wrapper function to interact with the analyzer_instance
 def analyze_string(input_string: str):
     return analyzer_instance.analyze(input_string)
-
-def get_phrases():
-    return analyzer_instance.phrases()

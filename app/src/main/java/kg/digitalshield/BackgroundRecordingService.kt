@@ -10,10 +10,18 @@ import android.content.Intent
 import android.os.IBinder
 import android.telephony.PhoneStateListener
 import android.telephony.TelephonyManager
+import dagger.hilt.android.AndroidEntryPoint
+import kg.digitalshield.db.CallRepository
+import kg.digitalshield.db.CallViewModel
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class BackgroundRecordingService : Service() {
     private lateinit var telephonyManager: TelephonyManager
     private lateinit var callStateListener: CallStateListener
+
+    @Inject
+    lateinit var callRepository: CallRepository // Inject the repository
 
     @SuppressLint("ForegroundServiceType")
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -23,7 +31,7 @@ class BackgroundRecordingService : Service() {
 
         // Initialize the telephony manager and listener
         telephonyManager = getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
-        callStateListener = CallStateListener(this)
+        callStateListener = CallStateListener(this, callRepository)
         telephonyManager.listen(callStateListener, PhoneStateListener.LISTEN_CALL_STATE)
 
         return START_STICKY

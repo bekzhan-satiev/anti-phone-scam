@@ -19,7 +19,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.PhoneScamDetector"
-        android:name="kg.digitalshield.db.MainApplication"
+        android:name="kg.digitalshield.db.MyApp"
         tools:targetApi="31">
         <!-- Declare the BackgroundRecordingService -->
         <service

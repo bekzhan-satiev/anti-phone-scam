@@ -3,24 +3,35 @@ package kg.digitalshield
 import android.Manifest
 import android.content.Context
 import android.media.AudioFormat
+import android.media.AudioManager
 import android.media.AudioRecord
+import android.media.MediaPlayer
 import android.media.MediaRecorder
+import android.media.ToneGenerator
 import android.telephony.PhoneStateListener
 import android.telephony.TelephonyManager
 import android.util.Log
 import androidx.annotation.RequiresPermission
 import com.chaquo.python.Python
+import kg.digitalschield.R
+import kg.digitalshield.db.Call
+import kg.digitalshield.db.CallRepository
+import kg.digitalshield.db.CallStatus
+import kg.digitalshield.db.CallViewModel
+import kg.digitalshield.db.RecognitionResult
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.json.Json
 import org.vosk.Model
 import org.vosk.Recognizer
 import org.vosk.android.StorageService
 import java.io.IOException
+import java.util.Date
 
-class CallStateListener(private val context: Context) : PhoneStateListener() {
+class CallStateListener(private val context: Context, private val callRepository: CallRepository) : PhoneStateListener() {
 
     private var phone: String? = null
 
@@ -29,6 +40,7 @@ class CallStateListener(private val context: Context) : PhoneStateListener() {
 
     private lateinit var model: Model
     private lateinit var recognizer: Recognizer
+
 
     private val python = Python.getInstance()
     private val stringAnalyzerModule = python.getModule("phrases_analyzer")
@@ -76,7 +88,7 @@ class CallStateListener(private val context: Context) : PhoneStateListener() {
         this.phone = phoneNumber
         when (state) {
             TelephonyManager.CALL_STATE_OFFHOOK -> startRecording()
-            TelephonyManager.CALL_STATE_IDLE -> stopRecordingAndProcessPhrases()
+            TelephonyManager.CALL_STATE_IDLE -> stopRecording()
             TelephonyManager.CALL_STATE_RINGING -> Log.d("CallState", "Ringing: $phone")
         }
     }
@@ -105,7 +117,7 @@ class CallStateListener(private val context: Context) : PhoneStateListener() {
                                 // Process final result
                                 val result = recognizer.finalResult
                                 Log.d("Final", "Final result: $result")
-                                processRecognitionResult(result)
+                                processRecognitionResult(extractTextFromJson(result))
                             }
                         }
                     }
@@ -115,6 +127,17 @@ class CallStateListener(private val context: Context) : PhoneStateListener() {
                 Log.e("RecordingError", "Error starting recording", e)
                 stopRecording()
             }
+        }
+    }
+
+    private fun extractTextFromJson(jsonString: String): String {
+        return try {
+            // Deserialize the JSON string into a RecognitionResult object
+            val result = Json.decodeFromString<RecognitionResult>(jsonString)
+            result.text
+        } catch (e: Exception) {
+            Log.e("JsonError", "Failed to parse JSON string: $jsonString", e)
+            throw RuntimeException("Hey bitch!")
         }
     }
 
@@ -134,40 +157,72 @@ class CallStateListener(private val context: Context) : PhoneStateListener() {
         }
     }
 
-    private fun stopRecordingAndProcessPhrases() {
-        stopRecording()
-        // Retrieve and log all stored phrases
-        coroutineScope.launch {
-            val phrasesResult = withContext(Dispatchers.IO) {
-                stringAnalyzerModule.callAttr("get_phrases")?.asList()?.joinToString(", ")
-            }
-            Log.d("StoredPhrases", "All phrases: $phrasesResult")
-        }
-    }
-
     private fun processRecognitionResult(result: String) {
         coroutineScope.launch {
             analyzeStringInBackground(result)
         }
     }
 
+
     private suspend fun analyzeStringInBackground(result: String) = withContext(Dispatchers.IO) {
         try {
-            val analysisResult = stringAnalyzerModule.callAttr("analyze_string", result)?.toDouble()
+            val analysisResult = stringAnalyzerModule.callAttr("analyze_string", result)?.asList()
             Log.d("AnalysisResult", "Analysis result: $analysisResult")
 
-            analysisResult?.let { score ->
-                Log.d("PythonAnalyze", "Analyzed value: $score")
+            analysisResult?.let { list ->
+                Log.d("PythonAnalyze", "Analyzed value: $list")
 
                 // Log an error if score > 0.6 (no need for Main thread)
-                if (score > 0.6) {
-                    Log.e("HighRiskAlert", "Detected high-risk phrase! Score: $score")
+                if (analysisResult.isNotEmpty()) {
+                    Log.e("HighRiskAlert", "Detected high-risk phrase! Score: $list")
+                    phone?.let {
+                        val call = Call(
+                            phoneNumber = it,
+                            callDate = Date(), // Current timestamp
+                            callStatus = CallStatus.SUSPICIOUS, // Assuming CallStatus has a HIGH_RISK value
+                            suspiciousPhrases = list.joinToString(",") // Store the detected phrase
+                        )
 
+                        callRepository.add(call)
+
+                        Log.d("Added", "Suspecious call from $phone was added to the app")
+
+                        stopRecording()
+
+                        withContext(Dispatchers.Main) {
+                            playBeepSound()
+                        }
+                    }
                 }
             }
 
         } catch (e: Exception) {
             Log.e("PythonError", "Error calling Python analyze_string", e)
+        }
+    }
+
+    private fun playBeepSound() {
+        try {
+            val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+
+            // Save the current notification volume
+            val currentVolume = audioManager.getStreamVolume(AudioManager.STREAM_NOTIFICATION)
+
+            // Set the notification volume to maximum (optional, adjust as needed)
+            val maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_NOTIFICATION)
+            audioManager.setStreamVolume(AudioManager.STREAM_NOTIFICATION, maxVolume, 0)
+
+            // Initialize the ToneGenerator with STREAM_NOTIFICATION and default volume
+            val toneGenerator = ToneGenerator(AudioManager.STREAM_NOTIFICATION, 100)
+
+            // Play the beep tone
+            toneGenerator.startTone(ToneGenerator.TONE_SUP_ERROR, 3000) // 200ms duration
+            toneGenerator.release()
+
+            // Restore the original notification volume
+            audioManager.setStreamVolume(AudioManager.STREAM_NOTIFICATION, currentVolume, 0)
+        } catch (e: Exception) {
+            Log.e("SoundError", "Failed to play beep sound", e)
         }
     }
 

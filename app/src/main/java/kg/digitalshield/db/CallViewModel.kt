@@ -6,14 +6,17 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class CallViewModel: ViewModel() {
+@HiltViewModel
+class CallViewModel @Inject constructor(
+    private val callRepository: CallRepository
+) : ViewModel() {
 
-    val callDao = MainApplication.callDatabase.getCallDao()
-
-    val calls : LiveData<List<Call>> = callDao.getCallsOrderedByTime()
+    val calls = callRepository.getAllCalls()
 
     var selectedCall by mutableStateOf<Call?>(null)
     fun updateSelectedCall(call: Call) {
@@ -22,15 +25,13 @@ class CallViewModel: ViewModel() {
 
     fun add(call: Call) {
         viewModelScope.launch(Dispatchers.IO) {
-            callDao.save(call)
+            callRepository.add(call)
         }
     }
 
     fun deleteById(id: Int) {
         viewModelScope.launch(Dispatchers.IO) {
-            callDao.delete(id)
+            callRepository.deleteById(id)
         }
     }
-
-
 }
