@@ -21,15 +21,16 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import kg.digitalschield.R
 import kg.digitalshield.db.CallStatus
-import kg.digitalshield.db.CallViewModel
+import kg.digitalshield.viewmodel.CallViewModel
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
 @Composable
-fun CallDetailsScreen(callViewModel: CallViewModel) {
+fun CallDetailsScreen(callViewModel: CallViewModel = hiltViewModel()) {
 
     val callDTO = callViewModel.selectedCall
 

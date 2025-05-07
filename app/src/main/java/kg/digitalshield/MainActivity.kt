@@ -12,7 +12,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -20,7 +19,6 @@ import androidx.navigation.compose.rememberNavController
 import com.chaquo.python.Python
 import com.chaquo.python.android.AndroidPlatform
 import dagger.hilt.android.AndroidEntryPoint
-import kg.digitalshield.db.CallViewModel
 import kg.digitalshield.navigation.BottomNavBar
 import kg.digitalshield.navigation.Screen
 import kg.digitalshield.ui.screen.CallDetailsScreen
@@ -55,8 +53,6 @@ class MainActivity : ComponentActivity() {
                     else -> true
                 }
 
-                // Use Hilt to inject CallViewModel
-                val callViewModel: CallViewModel = viewModel()
 
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
@@ -72,19 +68,17 @@ class MainActivity : ComponentActivity() {
                         composable(route = Screen.Home.route) {
                             HomeScreen(
                                 navController = navController,
-                                callViewModel
                             )
                         }
                         composable(route = Screen.Register.route) { RegisterScreen(navController = navController) }
-                        composable(route = Screen.Statistic.route) { StatisticScreen(callViewModel = callViewModel) }
+                        composable(route = Screen.Statistic.route) { StatisticScreen() }
                         composable(route = Screen.Search.route) { SearchScreen() }
                         composable(
                             route = Screen.CallDetailed.route,
 
                             ) {
-                            CallDetailsScreen(callViewModel = callViewModel)
+                            CallDetailsScreen()
                         }
-
                     }
                 }
             }

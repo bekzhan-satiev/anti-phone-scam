@@ -25,7 +25,7 @@ import androidx.navigation.NavController
 import kg.digitalschield.R
 import kg.digitalshield.db.Call
 import kg.digitalshield.db.CallStatus
-import kg.digitalshield.db.CallViewModel
+import kg.digitalshield.viewmodel.CallViewModel
 import kg.digitalshield.navigation.Screen
 import java.text.SimpleDateFormat
 import java.util.Date

@@ -32,16 +32,17 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import kg.digitalschield.R
-import kg.digitalshield.db.CallViewModel
+import kg.digitalshield.viewmodel.CallViewModel
 import kg.digitalshield.ui.component.CallsTable
 import kg.digitalshield.ui.component.LabelMarker
 import kg.digitalshield.ui.component.TopRoundedColumn
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen(navController: NavController, callViewModel: CallViewModel) {
+fun HomeScreen(navController: NavController, callViewModel: CallViewModel = hiltViewModel()) {
 
     var phoneNumber = "+996 500 00 00 00"
     var searchQuery by remember { mutableStateOf("") }

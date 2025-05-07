@@ -5,7 +5,6 @@ import android.content.Context
 import android.media.AudioFormat
 import android.media.AudioManager
 import android.media.AudioRecord
-import android.media.MediaPlayer
 import android.media.MediaRecorder
 import android.media.ToneGenerator
 import android.telephony.PhoneStateListener
@@ -13,11 +12,9 @@ import android.telephony.TelephonyManager
 import android.util.Log
 import androidx.annotation.RequiresPermission
 import com.chaquo.python.Python
-import kg.digitalschield.R
 import kg.digitalshield.db.Call
 import kg.digitalshield.db.CallRepository
 import kg.digitalshield.db.CallStatus
-import kg.digitalshield.db.CallViewModel
 import kg.digitalshield.db.RecognitionResult
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -183,7 +180,7 @@ class CallStateListener(private val context: Context, private val callRepository
                             suspiciousPhrases = list.joinToString(",") // Store the detected phrase
                         )
 
-                        callRepository.add(call)
+                        callRepository.save(call)
 
                         Log.d("Added", "Suspecious call from $phone was added to the app")
 

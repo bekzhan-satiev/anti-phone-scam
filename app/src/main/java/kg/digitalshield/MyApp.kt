@@ -1,4 +1,4 @@
-package kg.digitalshield.db
+package kg.digitalshield
 
 import android.app.Application
 import dagger.hilt.android.HiltAndroidApp

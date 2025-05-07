@@ -49,12 +49,12 @@ chaquopy {
     defaultConfig {
         version = "3.9"
 
-        pip {
+//        pip {
 //
-           install "src/main/python/wheels/annotated_types-0.7.0-py3-none-any.whl"
+//           install "src/main/python/wheels/annotated_types-0.7.0-py3-none-any.whl"
 
 //            install("-r", "src/main/python/requirements.txt")
-        }
+//        }
     }
 }
 
@@ -72,6 +72,7 @@ dependencies {
     implementation libs.navigation.compose
     implementation libs.androidx.livedata
     implementation libs.compose.charts
+    implementation libs.androidx.datastore
 
     implementation("com.google.dagger:hilt-android:2.51.1")
     implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
@@ -84,6 +85,11 @@ dependencies {
 
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:1.6.2")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.2")
+
+    implementation libs.retrofit
+    implementation libs.retrofit.converter
+    implementation libs.okhttp
+    implementation libs.okhttp.logging
 
     implementation libs.androidx.room.ktx
     ksp libs.androidx.room.compiler

@@ -14,6 +14,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -28,17 +29,26 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.rememberNavController
 import kg.digitalschield.R
 import kg.digitalshield.navigation.Screen
 import kg.digitalshield.ui.component.TopRoundedColumn
 import kg.digitalshield.ui.theme.AppTheme
+import kg.digitalshield.viewmodel.LoginViewModel
 
 @Composable
-fun LoginScreen(modifier: Modifier = Modifier, navController: NavController) {
+fun LoginScreen(
+    modifier: Modifier = Modifier,
+    navController: NavController,
+    viewModel: LoginViewModel = hiltViewModel()
+) {
     var login by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+
+    val loginState by viewModel.loginState.collectAsState()
 
     Column(modifier = modifier) {
         Column(
@@ -77,30 +87,73 @@ fun LoginScreen(modifier: Modifier = Modifier, navController: NavController) {
         ) {
             OutlinedTextField(
                 value = login,
-                onValueChange = { login = it },
+                onValueChange = {
+                    login = it
+                    if (loginState.error != null) {
+                        viewModel.resetState()
+                    }
+                },
                 label = { Text(text = stringResource(id = R.string.phone_number)) },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 8.dp)
+                modifier = Modifier.fillMaxWidth()
             )
 
             OutlinedTextField(
                 value = password,
-                onValueChange = { password = it },
+                onValueChange = {
+                    password = it
+                    if (loginState.error != null) {
+                        viewModel.resetState()
+                    }
+                },
                 label = { Text(text = stringResource(id = R.string.password)) },
                 visualTransformation = PasswordVisualTransformation(mask = '*'),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 8.dp)
+                modifier = Modifier.fillMaxWidth()
             )
 
-            Button(
-                onClick = { navController.navigate(Screen.Home.route) },
-                modifier = Modifier
-                    .padding(top = 16.dp)
-                    .fillMaxWidth()
-            ) {
-                Text(text = stringResource(id = R.string.to_login))
+            when {
+                loginState.isLoading -> {
+                    Button(
+                        onClick = {},
+                        enabled = false,
+                        modifier = Modifier
+                            .padding(top = 16.dp)
+                            .fillMaxWidth()
+                    ) {
+                        Text("Logging in...")
+                    }
+                }
+
+                loginState.isSuccess -> {
+                    navController.navigate(Screen.Home.route) {
+                        popUpTo(navController.graph.startDestinationId) {
+                            inclusive = true // removes everything up to start destination
+                        }
+                        launchSingleTop = true
+                    }
+                }
+
+                loginState.error != null -> {
+                    Text(
+                        text = loginState.error!!,
+                        color = MaterialTheme.colorScheme.error,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(8.dp)
+                    )
+                }
+
+                else -> {
+                    Button(
+                        onClick = {
+                            viewModel.login(login, password)
+                        },
+                        modifier = Modifier
+                            .padding(top = 16.dp)
+                            .fillMaxWidth()
+                    ) {
+                        Text(stringResource(id = R.string.to_login))
+                    }
+                }
             }
 
             Row(
@@ -121,7 +174,7 @@ fun LoginScreen(modifier: Modifier = Modifier, navController: NavController) {
 }
 
 @Preview(showSystemUi = true)
-@Composable()
+@Composable
 fun LoginScreenPreview() {
     AppTheme {
         LoginScreen(

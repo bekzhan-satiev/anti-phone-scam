@@ -5,14 +5,15 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.hilt.navigation.compose.hiltViewModel
 import ir.ehsannarmani.compose_charts.models.Pie
 import kg.digitalshield.db.CallStatus
-import kg.digitalshield.db.CallViewModel
+import kg.digitalshield.viewmodel.CallViewModel
 import kg.digitalshield.ui.component.PieChartStat
 import kg.digitalschield.R
 
 @Composable
-fun StatisticScreen(callViewModel: CallViewModel) {
+fun StatisticScreen(callViewModel: CallViewModel = hiltViewModel()) {
     val calls by callViewModel.calls.observeAsState(emptyList())
 
     val statusCounts = calls.groupingBy { it.callStatus }.eachCount()

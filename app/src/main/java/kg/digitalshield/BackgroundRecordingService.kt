@@ -12,7 +12,6 @@ import android.telephony.PhoneStateListener
 import android.telephony.TelephonyManager
 import dagger.hilt.android.AndroidEntryPoint
 import kg.digitalshield.db.CallRepository
-import kg.digitalshield.db.CallViewModel
 import javax.inject.Inject
 
 @AndroidEntryPoint

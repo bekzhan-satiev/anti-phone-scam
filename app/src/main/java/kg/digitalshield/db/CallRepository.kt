@@ -1,7 +1,6 @@
 package kg.digitalshield.db
 
 import androidx.lifecycle.LiveData
-import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
 class CallRepository @Inject constructor(
@@ -9,11 +8,8 @@ class CallRepository @Inject constructor(
 ) {
     fun getAllCalls(): LiveData<List<Call>> = callDao.getCallsOrderedByTime()
 
-    suspend fun add(call: Call) {
+    suspend fun save(call: Call) {
         callDao.save(call)
     }
 
-    suspend fun deleteById(id: Int) {
-        callDao.delete(id)
-    }
 }
