@@ -7,10 +7,12 @@
     <!-- Login and register screens -->
     <string name="digital_shield">Цифровой щит</string>
     <string name="to_register">Зарегистрироваться</string>
+    <string name="registering">Регистрация…</string>
     <string name="phone_number">Номер телефона</string>
     <string name="password">Пароль</string>
     <string name="password_repeat">Повторите пароль</string>
     <string name="to_login">Войти</string>
+    <string name="logging_in">Вход…</string>
     <string name="have_no_account">Нет аккаунта?</string>
     <string name="have_account">Уже есть аккаунт?</string>
 

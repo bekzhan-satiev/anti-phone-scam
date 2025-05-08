@@ -14,6 +14,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -28,21 +29,27 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import kg.digitalschield.R
 import kg.digitalshield.navigation.Screen
 import kg.digitalshield.ui.component.TopRoundedColumn
 import kg.digitalshield.ui.theme.AppTheme
+import kg.digitalshield.viewmodel.RegisterViewModel
 
 @Composable
 fun RegisterScreen(
     modifier: Modifier = Modifier,
-    navController: NavController
+    navController: NavController,
+    viewModel: RegisterViewModel = hiltViewModel()
 ) {
     var login by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var passwordRepeat by remember { mutableStateOf("") }
+
+    val registerState by viewModel.registerState.collectAsState()
+
 
     Column(modifier = modifier) {
         Column(
@@ -81,7 +88,10 @@ fun RegisterScreen(
         ) {
             OutlinedTextField(
                 value = login,
-                onValueChange = { login = it },
+                onValueChange = {
+                    login = it
+                    viewModel.resetState()
+                },
                 label = { Text(text = stringResource(id = R.string.phone_number)) },
                 modifier = Modifier
                     .fillMaxWidth()
@@ -90,7 +100,10 @@ fun RegisterScreen(
 
             OutlinedTextField(
                 value = password,
-                onValueChange = { password = it },
+                onValueChange = {
+                    password = it
+                    viewModel.resetState()
+                },
                 label = { Text(text = stringResource(id = R.string.password)) },
                 visualTransformation = PasswordVisualTransformation(mask = '*'),
                 modifier = Modifier
@@ -100,7 +113,10 @@ fun RegisterScreen(
 
             OutlinedTextField(
                 value = passwordRepeat,
-                onValueChange = { passwordRepeat = it },
+                onValueChange = {
+                    passwordRepeat = it
+                    viewModel.resetState()
+                },
                 label = { Text(text = stringResource(id = R.string.password_repeat)) },
                 visualTransformation = PasswordVisualTransformation(mask = '*'),
                 modifier = Modifier
@@ -108,13 +124,47 @@ fun RegisterScreen(
                     .padding(top = 8.dp)
             )
 
-            Button(
-                onClick = { navController.navigate(Screen.Login.route) },
-                modifier = Modifier
-                    .padding(top = 16.dp)
-                    .fillMaxWidth()
-            ) {
-                Text(text = stringResource(id = R.string.to_register))
+            when {
+                registerState.isLoading -> {
+                    Button(
+                        onClick = {},
+                        enabled = false,
+                        modifier = Modifier
+                            .padding(top = 16.dp)
+                            .fillMaxWidth()
+                    ) {
+                        Text(text = stringResource(R.string.registering))
+                    }
+                }
+
+                registerState.isSuccess -> {
+                    navController.navigate(Screen.Login.route) {
+                        popUpTo(Screen.Register.route) {
+                            inclusive = true
+                        }
+                    }
+                }
+
+                registerState.error != null -> {
+                    Text(
+                        text = registerState.error!!,
+                        color = MaterialTheme.colorScheme.error,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(8.dp)
+                    )
+                }
+
+                else -> {
+                    Button(
+                        onClick = { viewModel.register(phoneNumber = login, password = password) },
+                        modifier = Modifier
+                            .padding(top = 16.dp)
+                            .fillMaxWidth()
+                    ) {
+                        Text(text = stringResource(id = R.string.to_register))
+                    }
+                }
             }
 
             Row(

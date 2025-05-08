@@ -85,7 +85,7 @@ object AppModule {
     @Named("auth")
     fun provideAuthRetrofit(): Retrofit {
         return Retrofit.Builder()
-            .baseUrl("https://dummyjson.com")
+            .baseUrl("http://192.168.0.108:8080/test/")
             .addConverterFactory(GsonConverterFactory.create())
             .build()
     }

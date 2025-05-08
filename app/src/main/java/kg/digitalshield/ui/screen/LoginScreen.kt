@@ -31,7 +31,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.rememberNavController
 import kg.digitalschield.R
 import kg.digitalshield.navigation.Screen
@@ -48,7 +47,7 @@ fun LoginScreen(
     var login by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
 
-    val loginState by viewModel.loginState.collectAsState()
+    val requestState by viewModel.requestState.collectAsState()
 
     Column(modifier = modifier) {
         Column(
@@ -89,9 +88,8 @@ fun LoginScreen(
                 value = login,
                 onValueChange = {
                     login = it
-                    if (loginState.error != null) {
-                        viewModel.resetState()
-                    }
+                    viewModel.resetState()
+
                 },
                 label = { Text(text = stringResource(id = R.string.phone_number)) },
                 modifier = Modifier.fillMaxWidth()
@@ -101,9 +99,7 @@ fun LoginScreen(
                 value = password,
                 onValueChange = {
                     password = it
-                    if (loginState.error != null) {
-                        viewModel.resetState()
-                    }
+                    viewModel.resetState()
                 },
                 label = { Text(text = stringResource(id = R.string.password)) },
                 visualTransformation = PasswordVisualTransformation(mask = '*'),
@@ -111,7 +107,7 @@ fun LoginScreen(
             )
 
             when {
-                loginState.isLoading -> {
+                requestState.isLoading -> {
                     Button(
                         onClick = {},
                         enabled = false,
@@ -119,22 +115,21 @@ fun LoginScreen(
                             .padding(top = 16.dp)
                             .fillMaxWidth()
                     ) {
-                        Text("Logging in...")
+                        Text(text = stringResource(R.string.logging_in))
                     }
                 }
 
-                loginState.isSuccess -> {
+                requestState.isSuccess -> {
                     navController.navigate(Screen.Home.route) {
-                        popUpTo(navController.graph.startDestinationId) {
-                            inclusive = true // removes everything up to start destination
+                        popUpTo(Screen.Login.route) {
+                            inclusive = true
                         }
-                        launchSingleTop = true
                     }
                 }
 
-                loginState.error != null -> {
+                requestState.error != null -> {
                     Text(
-                        text = loginState.error!!,
+                        text = requestState.error!!,
                         color = MaterialTheme.colorScheme.error,
                         modifier = Modifier
                             .fillMaxWidth()
