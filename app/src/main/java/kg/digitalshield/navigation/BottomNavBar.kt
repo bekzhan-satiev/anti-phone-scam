@@ -14,12 +14,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import kg.digitalschield.R
-import androidx.compose.ui.graphics.vector.ImageVector
 
 
 @Composable
@@ -51,7 +51,8 @@ fun BottomNavBar(
         containerColor = MaterialTheme.colorScheme.primaryContainer
     ) {
         navItems.forEachIndexed { index, item ->
-            NavigationBarItem(selected = selectedNavigationIndex.intValue == index,
+            NavigationBarItem(
+                selected = selectedNavigationIndex.intValue == index,
                 onClick = {
                     selectedNavigationIndex.intValue = index
                     navController.navigate(item.route) {

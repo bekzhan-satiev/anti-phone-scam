@@ -35,10 +35,10 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import kg.digitalschield.R
-import kg.digitalshield.viewmodel.CallViewModel
 import kg.digitalshield.ui.component.CallsTable
 import kg.digitalshield.ui.component.LabelMarker
 import kg.digitalshield.ui.component.TopRoundedColumn
+import kg.digitalshield.viewmodel.CallViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

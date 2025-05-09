@@ -1,5 +1,6 @@
 package kg.digitalshield.auth
 
+import kg.digitalshield.service.AuthApiService
 import kotlinx.coroutines.runBlocking
 import okhttp3.Authenticator
 import okhttp3.Request

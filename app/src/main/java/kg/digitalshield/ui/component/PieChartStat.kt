@@ -1,12 +1,10 @@
 package kg.digitalshield.ui.component
 
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -50,7 +48,7 @@ fun PieChartStat(pieData: List<Pie>) {
     ) {
         Row(
             modifier = Modifier
-                .padding(8 .dp)
+                .padding(8.dp)
                 .fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
@@ -66,7 +64,7 @@ fun PieChartStat(pieData: List<Pie>) {
 
         PieChart(
             modifier = Modifier
-                .padding(8 .dp)
+                .padding(8.dp)
                 .size(200.dp),
             data = data,
             onPieClick = {
@@ -76,10 +74,12 @@ fun PieChartStat(pieData: List<Pie>) {
             style = Pie.Style.Stroke(width = 30.dp)
         )
 
-        Row(modifier = Modifier
-            .padding(8 .dp)
-            .fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween) {
+        Row(
+            modifier = Modifier
+                .padding(8.dp)
+                .fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
             data.forEach { pie ->
                 val percent = if (total > 0) (pie.data / total) * 100 else 0.0
                 StatisticLabel(color = pie.color, text = pie.label, percent = percent)
@@ -118,7 +118,7 @@ fun StatisticLabel(color: Color, text: String?, percent: Double) {
 
 
 @Composable
-@Preview( device = Devices.PIXEL)
+@Preview(device = Devices.PIXEL)
 fun PieChartPreview() {
     val fakeData = listOf(
         Pie("Безопасные", 10.0, Color.Green),

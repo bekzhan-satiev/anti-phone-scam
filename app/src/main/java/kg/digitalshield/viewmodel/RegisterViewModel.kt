@@ -3,10 +3,9 @@ package kg.digitalshield.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kg.digitalshield.auth.AuthApiService
-import kg.digitalshield.auth.LoginRequest
-import kg.digitalshield.auth.RegisterRequest
-import kg.digitalshield.auth.RequestState
+import kg.digitalshield.dto.request.RegisterRequest
+import kg.digitalshield.service.AuthApiService
+import kg.digitalshield.state.RequestState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
@@ -25,11 +24,12 @@ class RegisterViewModel @Inject constructor(
             _registerState.update { it.copy(isLoading = true) }
 
             try {
-                val registerRequest = RegisterRequest(phoneNumber = phoneNumber, password = password)
+                val registerRequest =
+                    RegisterRequest(phoneNumber = phoneNumber, password = password)
                 val response = authApiService.register(registerRequest)
 
                 if (response.isSuccessful) {
-                        _registerState.update { RequestState(isSuccess = true) }
+                    _registerState.update { RequestState(isSuccess = true) }
                 } else {
                     _registerState.update { RequestState(error = response.body().toString()) }
                 }

@@ -22,10 +22,10 @@ import dagger.hilt.android.AndroidEntryPoint
 import kg.digitalshield.navigation.BottomNavBar
 import kg.digitalshield.navigation.Screen
 import kg.digitalshield.ui.screen.CallDetailsScreen
+import kg.digitalshield.ui.screen.CheckScreen
 import kg.digitalshield.ui.screen.HomeScreen
 import kg.digitalshield.ui.screen.LoginScreen
 import kg.digitalshield.ui.screen.RegisterScreen
-import kg.digitalshield.ui.screen.SearchScreen
 import kg.digitalshield.ui.screen.StatisticScreen
 import kg.digitalshield.ui.theme.AppTheme
 
@@ -72,7 +72,7 @@ class MainActivity : ComponentActivity() {
                         }
                         composable(route = Screen.Register.route) { RegisterScreen(navController = navController) }
                         composable(route = Screen.Statistic.route) { StatisticScreen() }
-                        composable(route = Screen.Search.route) { SearchScreen() }
+                        composable(route = Screen.Search.route) { CheckScreen() }
                         composable(
                             route = Screen.CallDetailed.route,
 

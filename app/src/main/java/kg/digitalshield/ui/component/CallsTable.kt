@@ -25,8 +25,8 @@ import androidx.navigation.NavController
 import kg.digitalschield.R
 import kg.digitalshield.db.Call
 import kg.digitalshield.db.CallStatus
-import kg.digitalshield.viewmodel.CallViewModel
 import kg.digitalshield.navigation.Screen
+import kg.digitalshield.viewmodel.CallViewModel
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -50,13 +50,16 @@ fun CallsTable(
                 CallStatus.SUSPICIOUS -> 2
             }
         ) {
-            Tab(selected = selectedStatus == CallStatus.SAFE,
+            Tab(
+                selected = selectedStatus == CallStatus.SAFE,
                 onClick = { selectedStatus = CallStatus.SAFE },
                 text = { Text(text = stringResource(id = R.string.all), fontSize = 10.sp) })
-            Tab(selected = selectedStatus == CallStatus.BLOCKED,
+            Tab(
+                selected = selectedStatus == CallStatus.BLOCKED,
                 onClick = { selectedStatus = CallStatus.BLOCKED },
                 text = { Text(text = stringResource(id = R.string.blocked), fontSize = 10.sp) })
-            Tab(selected = selectedStatus == CallStatus.SUSPICIOUS,
+            Tab(
+                selected = selectedStatus == CallStatus.SUSPICIOUS,
                 onClick = { selectedStatus = CallStatus.SUSPICIOUS },
                 text = { Text(text = stringResource(id = R.string.suspicious), fontSize = 10.sp) })
 
@@ -66,7 +69,8 @@ fun CallsTable(
 
         LazyColumn {
             items(filteredCalls) { call ->
-                Row(horizontalArrangement = Arrangement.SpaceBetween,
+                Row(
+                    horizontalArrangement = Arrangement.SpaceBetween,
                     modifier = Modifier.clickable {
                         callViewModel.updateSelectedCall(call)
                         navController.navigate(

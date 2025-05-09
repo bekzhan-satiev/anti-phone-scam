@@ -1,4 +1,4 @@
-package kg.digitalshield.auth
+package kg.digitalshield.state
 
 data class RequestState(
     val isLoading: Boolean = false,

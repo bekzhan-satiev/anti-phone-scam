@@ -67,15 +67,6 @@ fun CallDetailsScreen(callViewModel: CallViewModel = hiltViewModel()) {
                     .padding(5.dp),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Text(text = stringResource(id = R.string.duration))
-                Text(text = "13 мин")
-            }
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(5.dp),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
                 Text(text = stringResource(id = R.string.call_date))
                 Text(text = formatDate(callDTO!!.callDate))
             }

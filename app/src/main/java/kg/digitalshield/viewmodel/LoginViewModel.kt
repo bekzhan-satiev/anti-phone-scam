@@ -3,10 +3,10 @@ package kg.digitalshield.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kg.digitalshield.auth.AuthApiService
-import kg.digitalshield.auth.LoginRequest
-import kg.digitalshield.auth.RequestState
 import kg.digitalshield.auth.TokenRepository
+import kg.digitalshield.dto.request.LoginRequest
+import kg.digitalshield.service.AuthApiService
+import kg.digitalshield.state.RequestState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update

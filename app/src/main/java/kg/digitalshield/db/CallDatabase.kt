@@ -6,12 +6,12 @@ import androidx.room.TypeConverters
 
 @Database(entities = [Call::class], version = 1)
 @TypeConverters(Converters::class)
-abstract class CallDatabase: RoomDatabase() {
+abstract class CallDatabase : RoomDatabase() {
 
     companion object {
         const val NAME = "CallsDB"
     }
 
-    abstract fun getCallDao() : CallDao
+    abstract fun getCallDao(): CallDao
 
 }

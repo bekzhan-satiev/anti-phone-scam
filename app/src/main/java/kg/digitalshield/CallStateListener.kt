@@ -28,7 +28,8 @@ import org.vosk.android.StorageService
 import java.io.IOException
 import java.util.Date
 
-class CallStateListener(private val context: Context, private val callRepository: CallRepository) : PhoneStateListener() {
+class CallStateListener(private val context: Context, private val callRepository: CallRepository) :
+    PhoneStateListener() {
 
     private var phone: String? = null
 
