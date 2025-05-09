@@ -24,7 +24,7 @@ class LoginViewModel @Inject constructor(
 
     fun login(username: String, password: String) {
         viewModelScope.launch {
-            _requestState.update { it.copy(isLoading = true) }
+            _requestState.update { RequestState(isLoading = true) }
 
             try {
                 val loginRequest = LoginRequest(phoneNumber = username, password = password)

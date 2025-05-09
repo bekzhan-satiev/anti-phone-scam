@@ -91,6 +91,8 @@ dependencies {
     implementation libs.okhttp
     implementation libs.okhttp.logging
 
+    implementation libs.jwt
+
     implementation libs.androidx.room.ktx
     ksp libs.androidx.room.compiler
 

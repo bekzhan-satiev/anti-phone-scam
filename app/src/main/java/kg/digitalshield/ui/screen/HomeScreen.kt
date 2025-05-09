@@ -17,6 +17,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SearchBar
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
@@ -39,12 +41,21 @@ import kg.digitalshield.ui.component.CallsTable
 import kg.digitalshield.ui.component.LabelMarker
 import kg.digitalshield.ui.component.TopRoundedColumn
 import kg.digitalshield.viewmodel.CallViewModel
+import kg.digitalshield.viewmodel.HomeViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen(navController: NavController, callViewModel: CallViewModel = hiltViewModel()) {
+fun HomeScreen(
+    navController: NavController,
+    callViewModel: CallViewModel = hiltViewModel(),
+    homeViewModel: HomeViewModel = hiltViewModel()
+) {
 
-    var phoneNumber = "+996 500 00 00 00"
+    val phoneNumber by homeViewModel.phoneNumber.collectAsState()
+    LaunchedEffect(Unit) {
+        homeViewModel.loadPhoneNumber()
+    }
+
     var searchQuery by remember { mutableStateOf("") }
     var searchActiveness by remember { mutableStateOf(false) }
 
@@ -74,14 +85,15 @@ fun HomeScreen(navController: NavController, callViewModel: CallViewModel = hilt
                 modifier = Modifier.fillMaxHeight(),
                 verticalArrangement = Arrangement.SpaceAround
             ) {
-                Text(
-                    modifier = Modifier
-                        .fillMaxWidth(),
-                    text = phoneNumber,
-                    fontSize = 20.sp,
-                    textAlign = TextAlign.Center,
-                    fontWeight = FontWeight.Bold
-                )
+                phoneNumber?.let {
+                    Text(
+                        modifier = Modifier.fillMaxWidth(),
+                        text = it,
+                        fontSize = 20.sp,
+                        textAlign = TextAlign.Center,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
 
                 Column {
                     LabelMarker(
