@@ -1,6 +1,6 @@
 package kg.digitalshield.auth
 
-import kg.digitalshield.service.AuthApiService
+import kg.digitalshield.api.AuthApi
 import kotlinx.coroutines.runBlocking
 import okhttp3.Authenticator
 import okhttp3.Request
@@ -9,7 +9,7 @@ import okhttp3.Route
 
 class TokenAuthenticator(
     private val tokenRepository: TokenRepository,
-    private val authApiService: AuthApiService
+    private val authApi: AuthApi
 ) : Authenticator {
     override fun authenticate(route: Route?, response: Response): Request? {
         return runBlocking {
@@ -17,7 +17,7 @@ class TokenAuthenticator(
             if (refreshToken.isNullOrEmpty()) return@runBlocking null
 
             try {
-                val refreshResponse = authApiService.refreshToken(refreshToken)
+                val refreshResponse = authApi.refreshToken(refreshToken)
                 if (refreshResponse.isSuccessful) {
                     val newTokens = refreshResponse.body() ?: return@runBlocking null
                     tokenRepository.saveTokens(newTokens.accessToken, newTokens.refreshToken)

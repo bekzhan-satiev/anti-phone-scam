@@ -11,8 +11,8 @@ import kg.digitalshield.auth.AuthInterceptor
 import kg.digitalshield.auth.TokenAuthenticator
 import kg.digitalshield.auth.TokenRepository
 import kg.digitalshield.db.CallDatabase
-import kg.digitalshield.service.AuthApiService
-import kg.digitalshield.service.CheckApiService
+import kg.digitalshield.api.AuthApi
+import kg.digitalshield.api.CheckApi
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -54,9 +54,9 @@ object AppModule {
     @Singleton
     fun provideTokenAuthenticator(
         tokenRepository: TokenRepository,
-        authApiService: AuthApiService
+        authApi: AuthApi
     ): TokenAuthenticator {
-        return TokenAuthenticator(tokenRepository, authApiService)
+        return TokenAuthenticator(tokenRepository, authApi)
     }
 
     @Provides
@@ -93,14 +93,14 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideAuthApiService(@Named("auth") retrofit: Retrofit): AuthApiService {
-        return retrofit.create(AuthApiService::class.java)
+    fun provideAuthApiService(@Named("auth") retrofit: Retrofit): AuthApi {
+        return retrofit.create(AuthApi::class.java)
     }
 
     @Provides
     @Singleton
-    fun providePhoneNumberCheckService(retrofit: Retrofit): CheckApiService {
-        return retrofit.create(CheckApiService::class.java)
+    fun providePhoneNumberCheckService(retrofit: Retrofit): CheckApi {
+        return retrofit.create(CheckApi::class.java)
     }
 
 }

@@ -5,7 +5,7 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kg.digitalshield.auth.TokenRepository
 import kg.digitalshield.dto.request.LoginRequest
-import kg.digitalshield.service.AuthApiService
+import kg.digitalshield.api.AuthApi
 import kg.digitalshield.state.RequestState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -15,7 +15,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class LoginViewModel @Inject constructor(
-    private val authApiService: AuthApiService,
+    private val authApi: AuthApi,
     private val tokenRepository: TokenRepository
 ) : ViewModel() {
 
@@ -28,7 +28,7 @@ class LoginViewModel @Inject constructor(
 
             try {
                 val loginRequest = LoginRequest(phoneNumber = username, password = password)
-                val response = authApiService.login(loginRequest)
+                val response = authApi.login(loginRequest)
 
                 if (response.isSuccessful) {
                     response.body()?.let { body ->

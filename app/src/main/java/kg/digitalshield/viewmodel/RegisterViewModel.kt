@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kg.digitalshield.dto.request.RegisterRequest
-import kg.digitalshield.service.AuthApiService
+import kg.digitalshield.api.AuthApi
 import kg.digitalshield.state.RequestState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -14,7 +14,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class RegisterViewModel @Inject constructor(
-    private val authApiService: AuthApiService
+    private val authApi: AuthApi
 ) : ViewModel() {
     private val _registerState = MutableStateFlow(RequestState())
     val registerState: StateFlow<RequestState> = _registerState
@@ -26,7 +26,7 @@ class RegisterViewModel @Inject constructor(
             try {
                 val registerRequest =
                     RegisterRequest(phoneNumber = phoneNumber, password = password)
-                val response = authApiService.register(registerRequest)
+                val response = authApi.register(registerRequest)
 
                 if (response.isSuccessful) {
                     _registerState.update { RequestState(isSuccess = true) }

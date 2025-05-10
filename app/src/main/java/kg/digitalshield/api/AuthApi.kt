@@ -1,4 +1,4 @@
-package kg.digitalshield.service
+package kg.digitalshield.api
 
 import kg.digitalshield.dto.request.LoginRequest
 import kg.digitalshield.dto.request.RegisterRequest
@@ -8,7 +8,7 @@ import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.POST
 
-interface AuthApiService {
+interface AuthApi {
     @POST("login")
     suspend fun login(@Body request: LoginRequest): Response<LoginResponse>
 

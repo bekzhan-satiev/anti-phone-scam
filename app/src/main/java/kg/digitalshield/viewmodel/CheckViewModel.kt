@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kg.digitalshield.dto.request.CheckRequest
-import kg.digitalshield.service.CheckApiService
+import kg.digitalshield.api.CheckApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
@@ -13,7 +13,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class CheckViewModel @Inject constructor(
-    private val checkApiService: CheckApiService
+    private val checkApi: CheckApi
 ) : ViewModel() {
     private val _checkState = MutableStateFlow(CheckState())
     val checkState: StateFlow<CheckState> = _checkState
@@ -22,7 +22,7 @@ class CheckViewModel @Inject constructor(
         viewModelScope.launch {
             _checkState.update { CheckState(isInProgress = true) }
             try {
-                val response = checkApiService.checkForFraud(checkRequest)
+                val response = checkApi.checkForFraud(checkRequest)
 
                 if (response.isSuccessful) {
                     val isFraud = response.body()

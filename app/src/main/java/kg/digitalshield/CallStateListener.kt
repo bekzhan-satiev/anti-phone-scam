@@ -22,6 +22,7 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.encodeToJsonElement
 import org.vosk.Model
 import org.vosk.Recognizer
 import org.vosk.android.StorageService
@@ -115,7 +116,7 @@ class CallStateListener(private val context: Context, private val callRepository
                                 // Process final result
                                 val result = recognizer.finalResult
                                 Log.d("Final", "Final result: $result")
-                                processRecognitionResult(extractTextFromJson(result))
+
                             }
                         }
                     }
