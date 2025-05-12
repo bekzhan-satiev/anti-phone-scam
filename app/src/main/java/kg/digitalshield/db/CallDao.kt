@@ -9,10 +9,10 @@ import androidx.room.Upsert
 interface CallDao {
 
     @Upsert
-    fun save(call: Call)
+    suspend fun save(call: Call)
 
-    @Query("DELETE FROM call WHERE id = :id")
-    fun delete(id: Int)
+    @Query("SELECT * FROM call WHERE id = :id")
+    suspend fun getById(id: Int): Call
 
     @Query("SELECT * FROM call ORDER BY callDate DESC")
     fun getCallsOrderedByTime(): LiveData<List<Call>>

@@ -2,35 +2,59 @@ package kg.digitalshield
 
 import android.Manifest
 import android.content.Context
+import android.media.AudioAttributes
+import android.media.AudioFocusRequest
 import android.media.AudioFormat
 import android.media.AudioManager
 import android.media.AudioRecord
+import android.media.MediaPlayer
 import android.media.MediaRecorder
 import android.media.ToneGenerator
+import android.os.Build
+import android.os.Handler
+import android.os.Looper
+import android.os.VibrationEffect
+import android.os.Vibrator
+import android.telecom.TelecomManager
 import android.telephony.PhoneStateListener
 import android.telephony.TelephonyManager
 import android.util.Log
 import androidx.annotation.RequiresPermission
-import com.chaquo.python.Python
+import kg.digitalschield.R
+import kg.digitalshield.api.AnalyzeApi
+import kg.digitalshield.api.CheckApi
 import kg.digitalshield.db.Call
 import kg.digitalshield.db.CallRepository
 import kg.digitalshield.db.CallStatus
-import kg.digitalshield.db.RecognitionResult
+import kg.digitalshield.dto.request.AnalyzeRequest
+import kg.digitalshield.dto.request.CheckRequest
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.cancelChildren
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.encodeToJsonElement
 import org.vosk.Model
 import org.vosk.Recognizer
 import org.vosk.android.StorageService
+import java.io.DataOutputStream
 import java.io.IOException
 import java.util.Date
+import javax.inject.Inject
+import kotlin.coroutines.cancellation.CancellationException
 
-class CallStateListener(private val context: Context, private val callRepository: CallRepository) :
-    PhoneStateListener() {
+class CallStateListener @Inject constructor(
+    private val context: Context,
+    private val callRepository: CallRepository,
+    private val analyzeApi: AnalyzeApi,
+    private val checkApi: CheckApi
+) : PhoneStateListener() {
 
     private var phone: String? = null
 
@@ -40,10 +64,10 @@ class CallStateListener(private val context: Context, private val callRepository
     private lateinit var model: Model
     private lateinit var recognizer: Recognizer
 
+    private val job = SupervisorJob()
+    private val coroutineScope = CoroutineScope(Dispatchers.Main + job)
 
-    private val python = Python.getInstance()
-    private val stringAnalyzerModule = python.getModule("phrases_analyzer")
-    private val coroutineScope = CoroutineScope(Dispatchers.Main)
+    private var isSuspiciousCall: Boolean? = null
 
     // Audio configuration
     private val sampleRate = 16000 // Vosk typically uses 16kHz
@@ -52,6 +76,8 @@ class CallStateListener(private val context: Context, private val callRepository
         AudioFormat.CHANNEL_IN_MONO,
         AudioFormat.ENCODING_PCM_16BIT
     )
+
+    private var isInCall: Boolean = false
 
     init {
         initModel()
@@ -86,9 +112,37 @@ class CallStateListener(private val context: Context, private val callRepository
     override fun onCallStateChanged(state: Int, phoneNumber: String?) {
         this.phone = phoneNumber
         when (state) {
-            TelephonyManager.CALL_STATE_OFFHOOK -> startRecording()
-            TelephonyManager.CALL_STATE_IDLE -> stopRecording()
-            TelephonyManager.CALL_STATE_RINGING -> Log.d("CallState", "Ringing: $phone")
+            TelephonyManager.CALL_STATE_OFFHOOK -> {
+                isInCall = true
+                startRecording()
+            }
+            TelephonyManager.CALL_STATE_IDLE -> {
+                isInCall = false
+                stopRecording()
+                isSuspiciousCall?.let {
+                    // Only save safe call if no coroutines are active (meaning no scam was detected)
+                    if (!it && job.children.none { it.isActive }) {
+                        phone?.let {
+                            coroutineScope.launch {
+                                val call = Call(
+                                    phoneNumber = it,
+                                    callDate = Date(),
+                                    callStatus = CallStatus.SAFE,
+                                    suspiciousPhrases = ""
+                                )
+                                callRepository.save(call)
+
+                            }
+                        }
+                    }
+
+                    isSuspiciousCall = null
+                }
+            }
+
+            TelephonyManager.CALL_STATE_RINGING -> {
+                Log.d("CallState", "Ringing: $phone")
+            }
         }
     }
 
@@ -116,7 +170,8 @@ class CallStateListener(private val context: Context, private val callRepository
                                 // Process final result
                                 val result = recognizer.finalResult
                                 Log.d("Final", "Final result: $result")
-
+                                val text = extractContentFrom(result);
+                                sendToAnalysis(phone!!, text)
                             }
                         }
                     }
@@ -129,7 +184,7 @@ class CallStateListener(private val context: Context, private val callRepository
         }
     }
 
-    private fun extractTextFromJson(jsonString: String): String {
+    private fun extractContentFrom(jsonString: String): String {
         return try {
             // Deserialize the JSON string into a RecognitionResult object
             val result = Json.decodeFromString<RecognitionResult>(jsonString)
@@ -138,6 +193,72 @@ class CallStateListener(private val context: Context, private val callRepository
             Log.e("JsonError", "Failed to parse JSON string: $jsonString", e)
             throw RuntimeException("Hey bitch!")
         }
+    }
+
+    private fun sendToAnalysis(phoneNumber: String, text: String) {
+        coroutineScope.launch(Dispatchers.IO) {
+            try {
+                if (!isActive) return@launch // Check if coroutine is still active
+
+                val request = AnalyzeRequest(phoneNumber, text)
+                Log.d("Request is", request.toString())
+
+                val response = analyzeApi.analyzePhrase(request)
+
+                if (!isActive) return@launch // Check again after network call
+
+                if (response.isSuccessful) {
+                    val analysisResults = response.body()
+                    Log.d("Analysis", "Success: $analysisResults")
+
+                    analysisResults?.let { results ->
+                        if (results.isNotEmpty()) {
+
+                            // Mark as suspicious call
+                            isSuspiciousCall = true
+
+                            val call = Call(
+                                phoneNumber = phoneNumber,
+                                callDate = Date(),
+                                callStatus = CallStatus.SUSPICIOUS,
+                                suspiciousPhrases = results.joinToString(",")
+                            )
+
+                            callRepository.save(call)
+                            Log.d("Added", "Suspicious call from $phone was added to the app")
+
+                            // Stop recording immediately
+                            withContext(Dispatchers.Main) {
+                                stopRecording()
+                            }
+
+                            job.cancelChildren()
+
+                            playScaryTone()
+                        }
+                    }
+                } else {
+                    Log.e("Analysis", "Error: ${response.errorBody()?.string()}")
+                }
+            } catch (e: Exception) {
+                if (e is CancellationException) {
+                    Log.d("Analysis", "Analysis cancelled")
+                } else {
+                    Log.e("Analysis", "Network error", e)
+                }
+            }
+        }
+    }
+
+
+    private fun playScaryTone() {
+        val toneGen = ToneGenerator(AudioManager.STREAM_ALARM, 100)
+        while (isInCall) {
+            toneGen.startTone(ToneGenerator.TONE_CDMA_HIGH_PBX_SSL, 200)
+            Thread.sleep(200) // Wait until the tone finishes
+        }
+        toneGen.release()
+
     }
 
     private fun stopRecording() {
@@ -150,80 +271,14 @@ class CallStateListener(private val context: Context, private val callRepository
                 }
                 audioRecord = null
                 recognizer.reset() // Reset the recognizer for future use
+
+                phone = null
             } catch (e: Exception) {
                 Log.e("RecordingError", "Error stopping recording", e)
             }
         }
     }
 
-    private fun processRecognitionResult(result: String) {
-        coroutineScope.launch {
-            analyzeStringInBackground(result)
-        }
-    }
-
-
-    private suspend fun analyzeStringInBackground(result: String) = withContext(Dispatchers.IO) {
-        try {
-            val analysisResult = stringAnalyzerModule.callAttr("analyze_string", result)?.asList()
-            Log.d("AnalysisResult", "Analysis result: $analysisResult")
-
-            analysisResult?.let { list ->
-                Log.d("PythonAnalyze", "Analyzed value: $list")
-
-                // Log an error if score > 0.6 (no need for Main thread)
-                if (analysisResult.isNotEmpty()) {
-                    Log.e("HighRiskAlert", "Detected high-risk phrase! Score: $list")
-                    phone?.let {
-                        val call = Call(
-                            phoneNumber = it,
-                            callDate = Date(), // Current timestamp
-                            callStatus = CallStatus.SUSPICIOUS, // Assuming CallStatus has a HIGH_RISK value
-                            suspiciousPhrases = list.joinToString(",") // Store the detected phrase
-                        )
-
-                        callRepository.save(call)
-
-                        Log.d("Added", "Suspecious call from $phone was added to the app")
-
-                        stopRecording()
-
-                        withContext(Dispatchers.Main) {
-                            playBeepSound()
-                        }
-                    }
-                }
-            }
-
-        } catch (e: Exception) {
-            Log.e("PythonError", "Error calling Python analyze_string", e)
-        }
-    }
-
-    private fun playBeepSound() {
-        try {
-            val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
-
-            // Save the current notification volume
-            val currentVolume = audioManager.getStreamVolume(AudioManager.STREAM_NOTIFICATION)
-
-            // Set the notification volume to maximum (optional, adjust as needed)
-            val maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_NOTIFICATION)
-            audioManager.setStreamVolume(AudioManager.STREAM_NOTIFICATION, maxVolume, 0)
-
-            // Initialize the ToneGenerator with STREAM_NOTIFICATION and default volume
-            val toneGenerator = ToneGenerator(AudioManager.STREAM_NOTIFICATION, 100)
-
-            // Play the beep tone
-            toneGenerator.startTone(ToneGenerator.TONE_SUP_ERROR, 3000) // 200ms duration
-            toneGenerator.release()
-
-            // Restore the original notification volume
-            audioManager.setStreamVolume(AudioManager.STREAM_NOTIFICATION, currentVolume, 0)
-        } catch (e: Exception) {
-            Log.e("SoundError", "Failed to play beep sound", e)
-        }
-    }
 
     /**
      * Cleanup method to release resources.
@@ -232,4 +287,9 @@ class CallStateListener(private val context: Context, private val callRepository
         coroutineScope.cancel() // Cancel the coroutine scope
         stopRecording() // Ensure recording is stopped
     }
+
+    @Serializable
+    private data class RecognitionResult(val text: String)
+
+
 }

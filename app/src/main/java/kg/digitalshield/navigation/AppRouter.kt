@@ -4,7 +4,7 @@ private object Route {
     const val LOGIN = "login"
     const val REGISTER = "register"
     const val HOME = "home"
-    const val CALL_DETAILED = "call"
+    const val CALL_DETAILED = "call/{id}"
     const val STATISTIC = "statistic"
     const val SEARCH = "search"
 }

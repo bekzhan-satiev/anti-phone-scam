@@ -64,7 +64,7 @@ fun CheckScreen(checkViewModel: CheckViewModel = hiltViewModel()) {
             query = searchQuery,
             onQueryChange = { searchQuery = it },
             onSearch = {
-                val request = CheckRequest(phoneNumber = searchQuery)
+                val request = CheckRequest(phone = searchQuery)
                 checkViewModel.isFraudNumber(request)
                 lastSearchedNumber = searchQuery
                 searchQuery = ""

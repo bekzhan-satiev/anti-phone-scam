@@ -7,7 +7,7 @@ import retrofit2.http.POST
 
 interface CheckApi {
 
-    @POST("search")
+    @POST("check")
     suspend fun checkForFraud(@Body checkRequest: CheckRequest): Response<Boolean>
 
 }

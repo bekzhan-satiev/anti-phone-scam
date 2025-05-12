@@ -16,23 +16,21 @@ import javax.inject.Inject
 
 @AndroidEntryPoint
 class BackgroundRecordingService : Service() {
-    private lateinit var telephonyManager: TelephonyManager
-    private lateinit var callStateListener: CallStateListener
-
     @Inject
-    lateinit var callRepository: CallRepository // Inject the repository
+    lateinit var callStateListener: CallStateListener
+
+    private lateinit var telephonyManager: TelephonyManager
+
+    override fun onCreate() {
+        super.onCreate()
+        telephonyManager = getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
+    }
 
     @SuppressLint("ForegroundServiceType")
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        // Create and start the foreground notification
         val notification = createNotification()
         startForeground(1, notification)
-
-        // Initialize the telephony manager and listener
-        telephonyManager = getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
-        callStateListener = CallStateListener(this, callRepository)
         telephonyManager.listen(callStateListener, PhoneStateListener.LISTEN_CALL_STATE)
-
         return START_STICKY
     }
 

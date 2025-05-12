@@ -1,5 +1,6 @@
 package kg.digitalshield
 
+import android.app.Application
 import android.content.Context
 import androidx.room.Room
 import dagger.Module
@@ -7,6 +8,7 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import kg.digitalshield.api.AnalyzeApi
 import kg.digitalshield.auth.AuthInterceptor
 import kg.digitalshield.auth.TokenAuthenticator
 import kg.digitalshield.auth.TokenRepository
@@ -75,7 +77,7 @@ object AppModule {
     @Singleton
     fun provideRetrofit(client: OkHttpClient): Retrofit {
         return Retrofit.Builder()
-            .baseUrl("http://192.168.0.108:8080/test/")
+            .baseUrl("http://176.126.164.165:5000/")
             .client(client)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
@@ -86,7 +88,17 @@ object AppModule {
     @Named("auth")
     fun provideAuthRetrofit(): Retrofit {
         return Retrofit.Builder()
-            .baseUrl("http://192.168.0.108:8080/test/auth/")
+            .baseUrl("http://192.168.86.116:8080/test/auth/")
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+    }
+
+    @Provides
+    @Singleton
+    @Named("test")
+    fun provideTestRetrofit(): Retrofit {
+        return Retrofit.Builder()
+            .baseUrl("http://192.168.86.116:8080/test/")
             .addConverterFactory(GsonConverterFactory.create())
             .build()
     }
@@ -97,10 +109,23 @@ object AppModule {
         return retrofit.create(AuthApi::class.java)
     }
 
+    //TODO: rename from service to api
     @Provides
     @Singleton
     fun providePhoneNumberCheckService(retrofit: Retrofit): CheckApi {
         return retrofit.create(CheckApi::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideAnalyzeApi(retrofit: Retrofit): AnalyzeApi {
+        return retrofit.create(AnalyzeApi::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideContext(application: Application): Context {
+        return application.applicationContext
     }
 
 }

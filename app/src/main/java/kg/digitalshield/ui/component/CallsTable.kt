@@ -72,7 +72,6 @@ fun CallsTable(
                 Row(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     modifier = Modifier.clickable {
-                        callViewModel.updateSelectedCall(call)
                         navController.navigate(
                             Screen.CallDetailed.route.replace(
                                 "{id}",

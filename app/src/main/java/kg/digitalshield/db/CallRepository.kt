@@ -12,4 +12,10 @@ class CallRepository @Inject constructor(
         callDao.save(call)
     }
 
+    suspend fun getById(id: Int): Call? {
+        return callDao.getById(id)
+    }
+
+
+
 }

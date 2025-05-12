@@ -1,5 +1,6 @@
 package kg.digitalshield.ui.screen
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -10,8 +11,14 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -24,113 +31,134 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import kg.digitalschield.R
 import kg.digitalshield.db.CallStatus
+import kg.digitalshield.dto.CallDetailState
 import kg.digitalshield.viewmodel.CallViewModel
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
 @Composable
-fun CallDetailsScreen(callViewModel: CallViewModel = hiltViewModel()) {
+fun CallDetailsScreen(callId: Int, callViewModel: CallViewModel = hiltViewModel()) {
 
-    val callDTO = callViewModel.selectedCall
+    Log.d("id ", callId.toString())
+    val state by callViewModel.state.collectAsState()
+
+    LaunchedEffect(callId) {
+        callViewModel.loadCallDetails(callId)
+    }
 
     Column {
-        Box(
-            modifier = Modifier
-                .weight(0.05f)
-                .fillMaxWidth(),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                text = stringResource(id = R.string.call_details),
-                textAlign = TextAlign.Center,
-                fontSize = 26.sp
-            )
-        }
 
-        Column(
-            modifier = Modifier
-                .weight(0.2f),
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(5.dp),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(text = stringResource(id = R.string.number))
-                Text(text = callDTO!!.phoneNumber)
+        when (val current = state) {
+            is CallDetailState.Loading -> {
+                CircularProgressIndicator(
+                    modifier = Modifier.fillMaxWidth(),
+                    color = MaterialTheme.colorScheme.secondary,
+                    trackColor = MaterialTheme.colorScheme.surfaceVariant,
+                )
             }
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(5.dp),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(text = stringResource(id = R.string.call_date))
-                Text(text = formatDate(callDTO!!.callDate))
-            }
-        }
 
-        Box(
-            modifier = Modifier
-                .weight(0.5f)
-                .fillMaxSize(),
-            contentAlignment = Alignment.Center
-        ) {
-            Image(
-                painter = painterResource(id = R.drawable.schield),
-                contentDescription = stringResource(id = R.string.shield_image_description),
-                alpha = 0.1f,
-                contentScale = ContentScale.Fit,
-                modifier = Modifier
-                    .padding(20.dp)
-                    .fillMaxSize()
-            )
-
-            Image(
-                painter = painterResource(id = getImageIdBasedOnCallStatus(callDTO!!.callStatus)),
-                contentDescription = null,
-                contentScale = ContentScale.Fit,
-                modifier = Modifier
-                    .fillMaxSize()
-            )
-
-
-        }
-        Box(
-            modifier = Modifier.weight(0.05f),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                text = stringResource(id = getStringIdBasedOnCallStatus(callDTO!!.callStatus)),
-                fontSize = 26.sp,
-                modifier = Modifier.fillMaxWidth(),
-                textAlign = TextAlign.Center,
-            )
-
-        }
-
-        if (callDTO!!.callStatus == CallStatus.SUSPICIOUS) {
-            Column(
-                modifier = Modifier
-                    .weight(0.2f)
-                    .padding(8.dp)
-            ) {
+            is CallDetailState.Success -> {
                 Text(
-                    text = stringResource(id = R.string.suspicious_phrases),
-                    fontSize = 20.sp
+                    text = stringResource(id = R.string.call_details),
+                    textAlign = TextAlign.Center,
+                    fontSize = 26.sp
                 )
 
-                val phrases = callDTO.suspiciousPhrases.split(",").map { it.trim() }
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(5.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(text = stringResource(id = R.string.number))
+                    Text(text = current.call.phoneNumber)
+                }
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(5.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(text = stringResource(id = R.string.call_date))
+                    Text(text = formatDate(current.call.callDate))
+                }
 
-                LazyColumn {
-                    items(phrases) { phrase ->
-                        Text(text = phrase, color = Color(0xFFE5A000))
+
+                if (current.call.callStatus == CallStatus.SUSPICIOUS) {
+
+                    Text(
+                        text = stringResource(id = R.string.suspicious_call),
+                        fontSize = 26.sp,
+                        color = Color.Yellow
+                    )
+
+                    Text(
+                        text = stringResource(id = R.string.suspicious_phrases),
+                        fontSize = 20.sp
+                    )
+
+                    val phrases = current.call.suspiciousPhrases.split(",").map { it.trim() }
+
+                    LazyColumn(
+                        modifier = Modifier
+                            .padding(8.dp)
+                    ) {
+                        itemsIndexed(phrases) { index, phrase ->
+                            Text(text = "${index + 1} - $phrase", color = Color(0xFFE5A000))
+                        }
                     }
+
+                } else {
+                    Box(
+                        modifier = Modifier
+                            .weight(0.5f)
+                            .fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Image(
+                            painter = painterResource(id = R.drawable.schield),
+                            contentDescription = stringResource(id = R.string.shield_image_description),
+                            alpha = 0.1f,
+                            contentScale = ContentScale.Fit,
+                            modifier = Modifier
+                                .padding(20.dp)
+                                .fillMaxSize()
+                        )
+
+                        Image(
+                            painter = painterResource(id = getImageIdBasedOnCallStatus(current.call.callStatus)),
+                            contentDescription = null,
+                            contentScale = ContentScale.Fit,
+                            modifier = Modifier
+                                .fillMaxSize()
+                        )
+
+
+                    }
+                    Text(
+                        text = stringResource(id = getStringIdBasedOnCallStatus(current.call.callStatus)),
+                        fontSize = 26.sp,
+                        modifier = Modifier.fillMaxWidth(),
+                        textAlign = TextAlign.Center,
+                    )
+
+                }
+            }
+
+            is CallDetailState.Error -> {
+                current.message?.let {
+                    Text(
+                        text = it,
+                        color = MaterialTheme.colorScheme.error,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(8.dp)
+                    )
                 }
             }
         }
+
 
     }
 }
