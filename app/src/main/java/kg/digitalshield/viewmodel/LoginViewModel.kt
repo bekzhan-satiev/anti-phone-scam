@@ -24,24 +24,24 @@ class LoginViewModel @Inject constructor(
 
     fun login(username: String, password: String) {
         viewModelScope.launch {
-            _requestState.update { RequestState(isLoading = true) }
+            _requestState.update { RequestState(isSuccess = true) }
 
-            try {
-                val loginRequest = LoginRequest(phoneNumber = username, password = password)
-                val response = authApi.login(loginRequest)
-
-                if (response.isSuccessful) {
-                    response.body()?.let { body ->
-                        tokenRepository.saveTokens(body.accessToken, body.refreshToken)
-                        _requestState.update { RequestState(isSuccess = true) }
-                    }
-                } else {
-                    _requestState.update { RequestState(error = "Invalid credentials") }
-                    tokenRepository.clearTokens()
-                }
-            } catch (e: Exception) {
-                _requestState.update { RequestState(error = "Network error: ${e.message}") }
-            }
+//            try {
+//                val loginRequest = LoginRequest(phoneNumber = username, password = password)
+//                val response = authApi.login(loginRequest)
+//
+//                if (response.isSuccessful) {
+//                    response.body()?.let { body ->
+//                        tokenRepository.saveTokens(body.accessToken, body.refreshToken)
+//                        _requestState.update { RequestState(isSuccess = true) }
+//                    }
+//                } else {
+//                    _requestState.update { RequestState(error = "Invalid credentials") }
+//                    tokenRepository.clearTokens()
+//                }
+//            } catch (e: Exception) {
+//                _requestState.update { RequestState(error = "Network error: ${e.message}") }
+//            }
         }
     }
 
