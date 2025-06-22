@@ -53,9 +53,9 @@ class CallStateListener @Inject constructor(
     private val context: Context,
     private val callRepository: CallRepository,
     private val analyzeApi: AnalyzeApi,
-    private val checkApi: CheckApi
 ) : PhoneStateListener() {
 
+    @Volatile
     private var phone: String? = null
 
     private var audioRecord: AudioRecord? = null
@@ -67,6 +67,7 @@ class CallStateListener @Inject constructor(
     private val job = SupervisorJob()
     private val coroutineScope = CoroutineScope(Dispatchers.Main + job)
 
+    @Volatile
     private var isSuspiciousCall: Boolean? = null
 
     // Audio configuration
@@ -116,28 +117,26 @@ class CallStateListener @Inject constructor(
                 isInCall = true
                 startRecording()
             }
+
             TelephonyManager.CALL_STATE_IDLE -> {
                 isInCall = false
-                stopRecording()
-                isSuspiciousCall?.let {
-                    // Only save safe call if no coroutines are active (meaning no scam was detected)
-                    if (!it && job.children.none { it.isActive }) {
-                        phone?.let {
-                            coroutineScope.launch {
-                                val call = Call(
-                                    phoneNumber = it,
-                                    callDate = Date(),
-                                    callStatus = CallStatus.SAFE,
-                                    suspiciousPhrases = ""
-                                )
-                                callRepository.save(call)
 
-                            }
+                phone?.let {
+                    if (isSuspiciousCall == null && it.isNotEmpty() ) {
+                        coroutineScope.launch {
+                            val call = Call(
+                                phoneNumber = it,
+                                callDate = Date(),
+                                callStatus = CallStatus.SAFE,
+                                suspiciousPhrases = ""
+                            )
+                            callRepository.save(call)
                         }
                     }
-
-                    isSuspiciousCall = null
                 }
+
+                isSuspiciousCall = null
+                stopRecording()
             }
 
             TelephonyManager.CALL_STATE_RINGING -> {
@@ -227,10 +226,7 @@ class CallStateListener @Inject constructor(
                             callRepository.save(call)
                             Log.d("Added", "Suspicious call from $phone was added to the app")
 
-                            // Stop recording immediately
-                            withContext(Dispatchers.Main) {
-                                stopRecording()
-                            }
+                            stopRecording()
 
                             job.cancelChildren()
 
@@ -264,6 +260,7 @@ class CallStateListener @Inject constructor(
     private fun stopRecording() {
         if (isRecording) {
             isRecording = false
+            phone = null
             try {
                 audioRecord?.apply {
                     stop()
@@ -271,8 +268,6 @@ class CallStateListener @Inject constructor(
                 }
                 audioRecord = null
                 recognizer.reset() // Reset the recognizer for future use
-
-                phone = null
             } catch (e: Exception) {
                 Log.e("RecordingError", "Error stopping recording", e)
             }
@@ -290,6 +285,5 @@ class CallStateListener @Inject constructor(
 
     @Serializable
     private data class RecognitionResult(val text: String)
-
 
 }
