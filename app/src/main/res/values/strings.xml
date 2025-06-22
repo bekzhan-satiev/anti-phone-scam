@@ -48,5 +48,6 @@
     <string name="number_is_safe">Номер безопасен</string>
     <string name="number_is_dangerous">Мошеннический номер!!!</string>
     <string name="check_for">Проверка по номеру:</string>
+    <string name="email">Почта</string>
 
 </resources>

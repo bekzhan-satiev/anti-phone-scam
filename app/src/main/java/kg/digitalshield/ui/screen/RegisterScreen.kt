@@ -9,7 +9,12 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -26,6 +31,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -44,9 +50,13 @@ fun RegisterScreen(
     navController: NavController,
     viewModel: RegisterViewModel = hiltViewModel()
 ) {
-    var login by remember { mutableStateOf("") }
+    var email by remember { mutableStateOf("") }
+    var phoneNumber by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var passwordRepeat by remember { mutableStateOf("") }
+
+    var isPasswordVisible by remember { mutableStateOf(false) }
+    var isPasswordRepeatVisible by remember { mutableStateOf(false) }
 
     val registerState by viewModel.registerState.collectAsState()
 
@@ -87,9 +97,21 @@ fun RegisterScreen(
                 .padding(8.dp)
         ) {
             OutlinedTextField(
-                value = login,
+                value = email,
                 onValueChange = {
-                    login = it
+                    email = it
+                    viewModel.resetState()
+                },
+                label = { Text(text = stringResource(id = R.string.email)) },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp)
+            )
+
+            OutlinedTextField(
+                value = phoneNumber,
+                onValueChange = {
+                    phoneNumber = it
                     viewModel.resetState()
                 },
                 label = { Text(text = stringResource(id = R.string.phone_number)) },
@@ -105,7 +127,17 @@ fun RegisterScreen(
                     viewModel.resetState()
                 },
                 label = { Text(text = stringResource(id = R.string.password)) },
-                visualTransformation = PasswordVisualTransformation(mask = '*'),
+                visualTransformation = if (isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                trailingIcon = {
+                    val icon =
+                        if (isPasswordVisible) Icons.Default.VisibilityOff else Icons.Default.Visibility
+
+                    val description = if (isPasswordVisible) "Hide password" else "Show password"
+
+                    IconButton(onClick = { isPasswordVisible = !isPasswordVisible }) {
+                        Icon(imageVector = icon, contentDescription = description)
+                    }
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = 8.dp)
@@ -118,7 +150,16 @@ fun RegisterScreen(
                     viewModel.resetState()
                 },
                 label = { Text(text = stringResource(id = R.string.password_repeat)) },
-                visualTransformation = PasswordVisualTransformation(mask = '*'),
+                visualTransformation = if (isPasswordRepeatVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                trailingIcon = {
+                    val icon =
+                        if (isPasswordRepeatVisible) Icons.Default.VisibilityOff else Icons.Default.Visibility
+                    val description =
+                        if (isPasswordRepeatVisible) "Hide password" else "Show password"
+                    IconButton(onClick = { isPasswordRepeatVisible = !isPasswordRepeatVisible }) {
+                        Icon(imageVector = icon, contentDescription = description)
+                    }
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = 8.dp)
@@ -157,7 +198,13 @@ fun RegisterScreen(
 
                 else -> {
                     Button(
-                        onClick = { viewModel.register(phoneNumber = login, password = password) },
+                        onClick = {
+                            viewModel.register(
+                                email = email,
+                                phoneNumber = phoneNumber,
+                                password = password
+                            )
+                        },
                         modifier = Modifier
                             .padding(top = 16.dp)
                             .fillMaxWidth()
@@ -183,6 +230,7 @@ fun RegisterScreen(
         }
     }
 }
+
 
 @Preview(showSystemUi = true)
 @Composable
