@@ -50,6 +50,7 @@ okhttp-logging = { group = "com.squareup.okhttp3", name = "logging-interceptor",
 
 jwt = { group = "com.auth0", name = "java-jwt", version.ref = "javaJwt" }
 
+icons-extended = { group = "androidx.compose.material", name = "material-icons-extended", version.ref = "composeRuntime" }
 
 
 [plugins]
