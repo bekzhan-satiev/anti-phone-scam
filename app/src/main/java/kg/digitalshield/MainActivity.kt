@@ -53,18 +53,17 @@ class MainActivity : ComponentActivity() {
         startForegroundService(serviceIntent)
 
 
-            val roleManager = getSystemService(ROLE_SERVICE) as RoleManager
-            val intent = roleManager.createRequestRoleIntent(RoleManager.ROLE_CALL_SCREENING)
-            val startForRequestRoleResult = registerForActivityResult(
-                ActivityResultContracts.StartActivityForResult()
-            ) { result: androidx.activity.result.ActivityResult ->
-                if (result.resultCode == Activity.RESULT_OK) {
-                    //  you will get result here in result.data
-                    bindMyService()
-                }
+        val roleManager = getSystemService(ROLE_SERVICE) as RoleManager
+        val intent = roleManager.createRequestRoleIntent(RoleManager.ROLE_CALL_SCREENING)
+        val startForRequestRoleResult = registerForActivityResult(
+            ActivityResultContracts.StartActivityForResult()
+        ) { result: androidx.activity.result.ActivityResult ->
+            if (result.resultCode == Activity.RESULT_OK) {
+                //  you will get result here in result.data
+                bindMyService()
             }
-            startForRequestRoleResult.launch(intent)
-
+        }
+        startForRequestRoleResult.launch(intent)
 
         setContent {
             AppTheme {
@@ -110,13 +109,18 @@ class MainActivity : ComponentActivity() {
                                 CallDetailsScreen(callId = callId)
                             }
                         }
-                        composable(route = Screen.ResetPassword.route) { ResetPasswordScreen(navController = navController) }
+                        composable(route = Screen.ResetPassword.route) {
+                            ResetPasswordScreen(
+                                navController = navController
+                            )
+                        }
                     }
                 }
             }
         }
     }
-    private fun bindMyService(){
+
+    private fun bindMyService() {
         Log.i("MainActivity", "binding my service")
         val mCallServiceIntent = Intent("android.telecom.CallScreeningService")
         mCallServiceIntent.setPackage(applicationContext.packageName)
@@ -125,6 +129,7 @@ class MainActivity : ComponentActivity() {
                 // iBinder is an instance of CallScreeningService.CallScreenBinder
                 // CallScreenBinder is an inner class present inside CallScreenService
             }
+
             override fun onServiceDisconnected(componentName: ComponentName) {}
             override fun onBindingDied(name: ComponentName) {}
         }
