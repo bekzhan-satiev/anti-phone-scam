@@ -9,7 +9,12 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -26,6 +31,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -46,6 +52,8 @@ fun LoginScreen(
 ) {
     var login by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+
+    var isPasswordVisible by remember { mutableStateOf(false) }
 
     val requestState by viewModel.requestState.collectAsState()
 
@@ -102,7 +110,15 @@ fun LoginScreen(
                     viewModel.resetState()
                 },
                 label = { Text(text = stringResource(id = R.string.password)) },
-                visualTransformation = PasswordVisualTransformation(mask = '*'),
+                visualTransformation = if (isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                trailingIcon = {
+                    val icon =
+                        if (isPasswordVisible) Icons.Default.VisibilityOff else Icons.Default.Visibility
+                    val description = if (isPasswordVisible) "Hide password" else "Show password"
+                    IconButton(onClick = { isPasswordVisible = !isPasswordVisible }) {
+                        Icon(imageVector = icon, contentDescription = description)
+                    }
+                },
                 modifier = Modifier.fillMaxWidth()
             )
 
