@@ -5,7 +5,6 @@ import android.app.role.RoleManager
 import android.content.ComponentName
 import android.content.Intent
 import android.content.ServiceConnection
-import android.os.Build
 import android.os.Bundle
 import android.os.IBinder
 import android.util.Log
@@ -36,6 +35,7 @@ import kg.digitalshield.ui.screen.CheckScreen
 import kg.digitalshield.ui.screen.HomeScreen
 import kg.digitalshield.ui.screen.LoginScreen
 import kg.digitalshield.ui.screen.RegisterScreen
+import kg.digitalshield.ui.screen.ResetPasswordScreen
 import kg.digitalshield.ui.screen.StatisticScreen
 import kg.digitalshield.ui.theme.AppTheme
 
@@ -74,6 +74,7 @@ class MainActivity : ComponentActivity() {
                 showBottomBar = when (navBackStackEntry?.destination?.route) {
                     Screen.Login.route -> false
                     Screen.Register.route -> false
+                    Screen.ResetPassword.route -> false
                     else -> true
                 }
 
@@ -109,6 +110,7 @@ class MainActivity : ComponentActivity() {
                                 CallDetailsScreen(callId = callId)
                             }
                         }
+                        composable(route = Screen.ResetPassword.route) { ResetPasswordScreen(navController = navController) }
                     }
                 }
             }

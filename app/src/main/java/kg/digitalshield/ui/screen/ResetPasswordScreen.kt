@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -25,31 +26,25 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
 import kg.digitalschield.R
 import kg.digitalshield.navigation.Screen
 import kg.digitalshield.ui.component.TopRoundedColumn
-import kg.digitalshield.ui.theme.AppTheme
-import kg.digitalshield.viewmodel.LoginViewModel
+import kg.digitalshield.viewmodel.ResetPasswordViewModel
 
 @Composable
-fun LoginScreen(
-    modifier: Modifier = Modifier,
+fun ResetPasswordScreen(
     navController: NavController,
-    viewModel: LoginViewModel = hiltViewModel()
+    viewModel: ResetPasswordViewModel = hiltViewModel()
 ) {
-    var login by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
+    var email by remember { mutableStateOf("") }
 
-    val requestState by viewModel.requestState.collectAsState()
+    val requestState by viewModel.resetState.collectAsState()
 
-    Column(modifier = modifier) {
+    Column() {
         Column(
             modifier = Modifier
                 .weight(1f)
@@ -85,43 +80,26 @@ fun LoginScreen(
                 .padding(8.dp)
         ) {
             OutlinedTextField(
-                value = login,
+                value = email,
                 onValueChange = {
-                    login = it
-                    viewModel.resetState()
-
+                    email = it
                 },
-                label = { Text(text = stringResource(id = R.string.phone_number)) },
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            OutlinedTextField(
-                value = password,
-                onValueChange = {
-                    password = it
-                    viewModel.resetState()
-                },
-                label = { Text(text = stringResource(id = R.string.password)) },
-                visualTransformation = PasswordVisualTransformation(mask = '*'),
+                label = { Text(text = stringResource(id = R.string.email)) },
                 modifier = Modifier.fillMaxWidth()
             )
 
             when {
                 requestState.isLoading -> {
-                    Button(
-                        onClick = {},
-                        enabled = false,
-                        modifier = Modifier
-                            .padding(top = 16.dp)
-                            .fillMaxWidth()
-                    ) {
-                        Text(text = stringResource(R.string.logging_in))
-                    }
+                    LinearProgressIndicator(
+                        modifier = Modifier.fillMaxWidth(),
+                        color = MaterialTheme.colorScheme.secondary,
+                        trackColor = MaterialTheme.colorScheme.surfaceVariant,
+                    )
                 }
 
                 requestState.isSuccess -> {
-                    navController.navigate(Screen.Home.route) {
-                        popUpTo(Screen.Login.route) {
+                    navController.navigate(Screen.ResetPassword.route) {
+                        popUpTo(Screen.ResetPassword.route) {
                             inclusive = true
                         }
                     }
@@ -140,14 +118,12 @@ fun LoginScreen(
                 else -> {
                     Button(
                         onClick = {
-                            viewModel.login(login, password)
+                            viewModel.resetPassword(email)
                         },
                         modifier = Modifier
                             .padding(top = 16.dp)
                             .fillMaxWidth()
-                    ) {
-                        Text(stringResource(id = R.string.to_login))
-                    }
+                    ) { Text(stringResource(id = R.string.reset_password)) }
                 }
             }
 
@@ -158,27 +134,12 @@ fun LoginScreen(
                 horizontalArrangement = Arrangement.SpaceAround
             ) {
                 Text(
-                    text = stringResource(id = R.string.forgot_password),
-                    modifier = Modifier.clickable { navController.navigate(Screen.ResetPassword.route) },
-                    style = TextStyle(color = MaterialTheme.colorScheme.onPrimaryContainer)
-                )
-                Text(
-                    text = stringResource(id = R.string.to_register),
-                    modifier = Modifier.clickable { navController.navigate(Screen.Register.route) },
+                    text = stringResource(id = R.string.to_login),
+                    modifier = Modifier.clickable { navController.navigate(Screen.Login.route) },
                     style = TextStyle(color = MaterialTheme.colorScheme.onPrimaryContainer)
                 )
             }
-        }
-    }
-}
 
-@Preview(showSystemUi = true)
-@Composable
-fun LoginScreenPreview() {
-    AppTheme {
-        LoginScreen(
-            modifier = Modifier.fillMaxSize(),
-            rememberNavController()
-        )
+        }
     }
 }

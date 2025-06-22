@@ -15,6 +15,7 @@ import kg.digitalshield.auth.TokenRepository
 import kg.digitalshield.db.CallDatabase
 import kg.digitalshield.api.AuthApi
 import kg.digitalshield.api.CheckApi
+import kg.digitalshield.api.ResetPasswordApi
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -110,6 +111,12 @@ object AppModule {
     @Singleton
     fun provideAnalyzeApi(retrofit: Retrofit): AnalyzeApi {
         return retrofit.create(AnalyzeApi::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideResetPassword(retrofit: Retrofit) : ResetPasswordApi {
+        return retrofit.create(ResetPasswordApi::class.java)
     }
 
     @Provides

@@ -7,6 +7,7 @@ private object Route {
     const val CALL_DETAILED = "call/{id}"
     const val STATISTIC = "statistic"
     const val SEARCH = "search"
+    const val RESET_PASSWORD = "reset"
 }
 
 sealed class Screen(val route: String) {
@@ -16,4 +17,5 @@ sealed class Screen(val route: String) {
     data object CallDetailed : Screen(Route.CALL_DETAILED)
     data object Statistic : Screen(Route.STATISTIC)
     data object Search : Screen(Route.SEARCH)
+    data object ResetPassword : Screen(Route.RESET_PASSWORD)
 }
