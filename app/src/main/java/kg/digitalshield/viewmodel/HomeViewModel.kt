@@ -21,9 +21,9 @@ constructor(private val tokenRepository: TokenRepository) : ViewModel() {
     fun loadPhoneNumber() {
         if (_phoneNumber.value != null) return
         viewModelScope.launch {
-            val token = tokenRepository.getAccessToken()
-            val decodedPhone = token?.let { decodeSubFromToken(it) }
-            _phoneNumber.value = decodedPhone
+//            val token = tokenRepository.getAccessToken()
+//            val decodedPhone = token?.let { decodeSubFromToken(it) }
+            _phoneNumber.value = "996500011737"
         }
     }
 
