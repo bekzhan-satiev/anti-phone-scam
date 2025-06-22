@@ -78,7 +78,7 @@ object AppModule {
     fun provideRetrofit(client: OkHttpClient): Retrofit {
         return Retrofit.Builder()
             .baseUrl("http://176.126.164.165:5000/")
-            .client(client)
+//            .client(client)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
     }
@@ -89,16 +89,6 @@ object AppModule {
     fun provideAuthRetrofit(): Retrofit {
         return Retrofit.Builder()
             .baseUrl("http://192.168.86.116:8080/test/auth/")
-            .addConverterFactory(GsonConverterFactory.create())
-            .build()
-    }
-
-    @Provides
-    @Singleton
-    @Named("test")
-    fun provideTestRetrofit(): Retrofit {
-        return Retrofit.Builder()
-            .baseUrl("http://192.168.86.116:8080/test/")
             .addConverterFactory(GsonConverterFactory.create())
             .build()
     }
